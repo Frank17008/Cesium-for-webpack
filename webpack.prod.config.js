@@ -72,6 +72,7 @@ module.exports = {
                 use: [
                     {
                         loader: "babel-loader",
+                        cacheDirectory: true, //缓存babel-loader编译结果,下次编译时读取缓存提高效率
                         options: {
                             presets: ["@babel/preset-env"]
                         }
