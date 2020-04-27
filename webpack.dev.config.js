@@ -42,16 +42,6 @@ module.exports = {
             template: "./src/index.html",
             filename: "index.html"
         }),
-        // 拷贝Cesium下的静态目录
-        new CopyWebpackPlugin([
-            { from: path.join(cesiumSource, "Widgets"), to: "Widgets" }
-        ]),
-        new CopyWebpackPlugin([
-            { from: path.join(cesiumSource, "Assets"), to: "Assets" }
-        ]),
-        new CopyWebpackPlugin([
-            { from: path.join(cesiumSource, cesiumWorkers), to: "Workers" }
-        ]),
         new Webpack.DefinePlugin({
             //Cesium加载静态文件的URL相对路径
             CESIUM_BASE_URL: JSON.stringify("")
