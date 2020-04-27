@@ -13,11 +13,13 @@ const EVENTS_MAP = {
 };
 export class Map3D {
 	constructor(divId, BASE_URL) {
-		window.CESIUM_BASE_URL = BASE_URL || "";
+		// window.CESIUM_BASE_URL = BASE_URL || "";
 		this.divId = divId;
 		//事件句柄集合
 		this.eventHandler = {};
 		this.viewer = null;
+		// this._groundHeightAtCameraPosition;
+		// this._HeightAboveGround;
 	}
 	initMap(config) {
 		//创建cesium Viewer场景
@@ -47,14 +49,17 @@ export class Map3D {
 			//如果设置为true，则所有几何图形以3D模式绘制以节约GPU资源
 			scene3DOnly: true,
 			navigationInstructionsInitiallyVisible: false,
-			showRenderLoopErrors: false
+			showRenderLoopErrors: false,
 			//加载自定义地图瓦片需要指定一个自定义图片服务器 例如指定OpenStreetMapImagerProvider
 			//URL 为瓦片数据服务器地址
-			// imageryProvider: new Cesium.UrlTemplateImageryProvider({
-			// 	// url: config.BaseLayerUrl,
-			// 	maximumLevel: 0,
-			// 	minimumLevel: 18,
-			// }),
+			imageryProvider: config.mapBaseLayerUrl
+				? new Cesium.SingleTileImageryProvider({
+						url: config.mapBaseLayerUrl,
+						rectangle: new Cesium.Rectangle(Cesium.Math.toRadians(90), Cesium.Math.toRadians(90), Cesium.Math.toRadians(100), Cesium.Math.toRadians(100))
+						// maximumLevel: 0,
+						// minimumLevel: 18
+				  })
+				: null
 			// // targetFrameRate: 1,
 			// 初始场景模式 默认SceneMode.SCENE3D
 			// sceneMode: Cesium.SceneMode.SCENE2D,
@@ -64,10 +69,14 @@ export class Map3D {
 		this.viewer._cesiumWidget._creditContainer.style.display = "none";
 		// 启用地球照明
 		this.viewer.scene.globe.enableLighting = config.enableLighting ? true : false;
+		// 开启阴影
+		this.viewer.shadows = config.enableShadows ? true : false;
+
 		// 显示坐标
 		config.showLatLonHeight && this.createLocationPanel();
 		// 显示导航插件
 		config.enableNavigation && this.showNavigation();
+		// this.disableCameraToGround();
 	}
 	// 显示罗盘、指南针
 	showNavigation() {
@@ -110,6 +119,18 @@ export class Map3D {
 		dom.innerHTML = html;
 		document.body.appendChild(dom);
 		this.showMouseLocation();
+	}
+	/**
+	 * 是否隐藏坐标面板
+	 * 该方法不会删除Dom节点
+	 * @params isShow boolean true显示 false隐藏
+	 * @memberof Map3D
+	 */
+	hideLocationPanel(isShow) {
+		let dom = document.querySelector("#latlng");
+		if (dom) {
+			isShow ? dom.setAttribute("visibility", "visible") : dom.setAttribute("visibility", "hidden");
+		}
 	}
 	// 显示鼠标的移动坐标
 	showMouseLocation() {
@@ -331,7 +352,7 @@ export class Map3D {
 						outlineWidth: 20,
 						fillColor: Cesium.Color.BLACK,
 						verticalOrigin: Cesium.VerticalOrigin.BOTTOM, //垂直方向以底部来计算标签的位置
-						pixelOffset: new Cesium.Cartesian2(0, -10) //偏移量
+						pixelOffset: new Cesium.Cartesian2(0, -15) //偏移量
 					},
 					billboard: {
 						//图标
@@ -341,6 +362,7 @@ export class Map3D {
 					}
 				};
 				entities[index] = dataSource ? dataSource.entities.add(entryObj) : this.viewer.entities.add(entryObj);
+				console.log(dataSource, entities[index]);
 			});
 			return entities;
 		}
@@ -493,11 +515,41 @@ export class Map3D {
 	removeInfoWindow() {
 		document.querySelector("#map3d-infowindow").style.display = "none";
 	}
+	disableCameraToGround() {
+		const self = this;
+		this.viewer.scene.preRender.addEventListener(onPreFrame, self);
+		function onPreFrame() {
+			console.log(self.viewer.scene.mode);
+			if (self.viewer.scene.mode == Cesium.SceneMode.MORPHING) return;
+			// 获取相机的高度
+			let groundHeightAtCameraPosition = self.viewer.scene.globe.getHeight(self.viewer.camera.positionCartographic);
+			if (!groundHeightAtCameraPosition) return;
+			self._groundHeightAtCameraPosition = groundHeightAtCameraPosition;
+			// 获取地面高度
+			self._HeightAboveGround = self.viewer.camera.positionCartographic.height - self._groundHeightAtCameraPosition;
+			handleHitGround();
+		}
+		function handleHitGround() {
+			let hitTheGround;
+			let adjustedHeight;
+			hitTheGround = self._HeightAboveGround < 0;
+			adjustedHeight = self._groundHeightAtCameraPosition + 10;
+			if (hitTheGround) {
+				// 重置相机视角
+				self.viewer.camera.setView({
+					destination: Cesium.Cartesian3.fromRadians(self.viewer.camera.positionCartographic.longitude, self.viewer.camera.positionCartographic.latitude, adjustedHeight),
+					orientation: {
+						heading: self.viewer.camera.heading,
+						pitch: self.viewer.camera.pitch,
+						roll: 0.0
+					}
+				});
+			}
+		}
+	}
 	// 销毁
 	destory() {
 		this.viewer.destory();
 		window.Map3D = null;
 	}
 }
-// window.Map3D = Map3D;
-// export Map3D;

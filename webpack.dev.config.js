@@ -46,7 +46,7 @@ module.exports = {
 		}),
 		new Webpack.DefinePlugin({
 			//Cesium加载静态文件的URL相对路径
-			CESIUM_BASE_URL: JSON.stringify("")
+			CESIUM_BASE_URL: JSON.stringify("./static")
 		})
 	],
 	module: {
