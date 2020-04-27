@@ -96,21 +96,20 @@ module.exports = {
 	},
 	optimization: {
 		// 代码分割
-		splitChunks: {
-			name: false, //为true时,Chunk包将以cacheGroups的key命名
-			cacheGroups: {
-				vendor: {
-					chunks: "all",
-					name: "Cesium", //chunk代码块的名称 output指定名称时以output配置为准
-					test: /[\\/]node_modules[\\/]/, // 匹配 node_modules 下的模块
-					minChunks: 1, // 模块的最小被引用次数
-					minSize: 30000 // 模块的最小体积 bytes
+		// splitChunks: {
+			// name: false, //为true时,Chunk包将以cacheGroups的key命名
+			// cacheGroups: {
+				// vendor: {
+					// chunks: "all",
+					// name: "Cesium", //chunk代码块的名称 output指定名称时以output配置为准
+					// test: /[\\/]node_modules[\\/]/ // 匹配 node_modules 下的模块
+					// minChunks: 1, // 模块的最小被引用次数
+					// minSize: 30000 // 模块的最小体积 bytes
 				}
 			}
-		},
+		// },
 		minimizer: [
 			new TerserWebpackPlugin({
-				// 加快构建速度
 				cache: true,
 				// 开启多线程
 				parallel: true,
