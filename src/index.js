@@ -1,4 +1,4 @@
-import * as Cesium from "cesium/Cesium";
+import Cesium from "cesium/Cesium";
 import CesiumNavigation from "cesium-navigation-es6";
 require("cesium/Widgets/widgets.css");
 require("./index.less");
@@ -11,7 +11,7 @@ const EVENTS_MAP = {
 	mousemove: "MOUSE_MOVE",
 	mousewheel: "WHEEL"
 };
-class Map3D {
+export class Map3D {
 	constructor(divId, BASE_URL) {
 		window.CESIUM_BASE_URL = BASE_URL || "";
 		this.divId = divId;
@@ -307,7 +307,7 @@ class Map3D {
 	 * }
 	 * @memberof Map3D
 	 */
-	addMarkers(markers, dataSource = null) {
+	addMarkers(markers, dataSource) {
 		if (markers.length) {
 			var entities = [];
 			markers.forEach((marker, index) => {
@@ -499,5 +499,5 @@ class Map3D {
 		window.Map3D = null;
 	}
 }
-window.Map3D = Map3D;
-export default Map3D;
+// window.Map3D = Map3D;
+// export Map3D;
