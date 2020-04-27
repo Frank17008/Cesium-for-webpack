@@ -14,30 +14,35 @@ module.exports = {
     output: {
         filename: "ZVMap3D.min.js",
         path: path.resolve(__dirname, "map3D"),
-        chunkFilename: "Cesium.js",
+        chunkFilename: "Cesium.chunk.js",
         //需要编译Cesium中的多行字符串
-        sourcePrefix: "",
+        sourcePrefix: ""
     },
     amd: {
         //允许Cesium兼容 webpack的require方式
-        toUrlUndefined: true,
+        toUrlUndefined: true
     },
     node: {
-        fs: "empty",
+        fs: "empty"
+    },
+    resolve: {
+        alias: {
+            cesium: path.resolve(__dirname, cesiumSource)
+        }
     },
     // webpack的所有插件配置 数组
     plugins: [
         // 拷贝Cesium下的静态目录
         new CopyWebpackPlugin([
-            { from: path.join(cesiumSource, "Widgets"), to: "Widgets" },
+            { from: path.join(cesiumSource, "Widgets"), to: "Widgets" }
         ]),
         new CopyWebpackPlugin([
-            { from: path.join(cesiumSource, "Assets"), to: "Assets" },
+            { from: path.join(cesiumSource, "Assets"), to: "Assets" }
         ]),
         new CopyWebpackPlugin([
-            { from: path.join(cesiumSource, cesiumWorkers), to: "Workers" },
+            { from: path.join(cesiumSource, cesiumWorkers), to: "Workers" }
         ]),
-        new CleanWebpackPlugin(),
+        new CleanWebpackPlugin()
     ],
     module: {
         // Critical dependency
@@ -45,7 +50,7 @@ module.exports = {
         rules: [
             {
                 test: /\.css$/,
-                use: ["style-loader", "css-loader", "postcss-loader"],
+                use: ["style-loader", "css-loader", "postcss-loader"]
             },
             {
                 test: /\.less$/,
@@ -53,12 +58,12 @@ module.exports = {
                     "style-loader",
                     "css-loader",
                     "postcss-loader",
-                    "less-loader",
-                ],
+                    "less-loader"
+                ]
             },
             {
                 test: /\.(png|gif|jpg|jpeg|svg|xml)$/,
-                use: ["url-loader"],
+                use: ["url-loader"]
             },
             {
                 test: /.js$/,
@@ -68,32 +73,32 @@ module.exports = {
                     {
                         loader: "babel-loader",
                         options: {
-                            presets: ["@babel/preset-env"],
-                        },
+                            presets: ["@babel/preset-env"]
+                        }
                     },
-                    // {
-                    //     loader: "strip-pragma-loader", //去除cesium的一些开发错误和警告信息
-                    //     options: {
-                    //         pragmas: {
-                    //             debug: false,
-                    //         },
-                    //     },
-                    // },
-                ],
-            },
-        ],
+                    {
+                        loader: "strip-pragma-loader", //去除cesium的一些开发错误和警告信息
+                        options: {
+                            pragmas: {
+                                debug: false
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
     },
     //性能配置
     performance: {
-        hints: "warning", // 枚举
-        maxAssetSize: 30000000, // 整数类型（以字节为单位）
-        maxEntrypointSize: 50000000, // 整数类型（以字节为单位）
+        hints: "error", // 枚举 false | "error" | "warning"
+        maxAssetSize: 30000000, // 资源(asset)是从 webpack 生成的任何文件 整数类型（字节bytes）
+        maxEntrypointSize: 50000000, // 入口起点的最大体积 整数类型（字节bytes）
         assetFilter: (assetFilename) => {
             // 提供资源文件名的断言函数
             return (
                 assetFilename.endsWith(".css") || assetFilename.endsWith(".js")
             );
-        },
+        }
     },
     optimization: {
         // 代码分割
@@ -105,26 +110,27 @@ module.exports = {
                     test: /[\\/]node_modules[\\/]/, // 匹配 node_modules 下的模块
                     minChunks: 1,
                     minSize: 30000,
-                    priority: 10, // 设置优先级
-                },
-            },
+                    priority: 10 // 设置优先级
+                }
+            }
         },
         minimizer: [
             new TerserWebpackPlugin({
                 // 加快构建速度
                 cache: true,
                 // 开启多线程
-                // parallel: true,
+                parallel: true,
+                sourceMap: false,
                 terserOptions: {
                     // 打包时将无用代码去除
                     compress: {
                         unused: true,
                         drop_debugger: true,
                         drop_console: true,
-                        dead_code: true,
-                    },
-                },
-            }),
-        ],
-    },
+                        dead_code: true
+                    }
+                }
+            })
+        ]
+    }
 };
