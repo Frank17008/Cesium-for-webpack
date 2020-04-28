@@ -13,13 +13,11 @@ const EVENTS_MAP = {
 };
 export class Map3D {
 	constructor(divId, BASE_URL) {
-		// window.CESIUM_BASE_URL = BASE_URL || "";
+		window.CESIUM_BASE_URL = BASE_URL || "";
 		this.divId = divId;
 		//事件句柄集合
 		this.eventHandler = {};
 		this.viewer = null;
-		// this._groundHeightAtCameraPosition;
-		// this._HeightAboveGround;
 	}
 	initMap(config) {
 		//创建cesium Viewer场景
@@ -53,10 +51,10 @@ export class Map3D {
 			//加载自定义地图瓦片需要指定一个自定义图片服务器 例如指定OpenStreetMapImagerProvider
 			//URL 为瓦片数据服务器地址
 			imageryProvider: config.mapBaseLayerUrl
-				? new Cesium.SingleTileImageryProvider({
-						url: config.mapBaseLayerUrl,
-						rectangle: new Cesium.Rectangle(Cesium.Math.toRadians(90), Cesium.Math.toRadians(90), Cesium.Math.toRadians(100), Cesium.Math.toRadians(100))
-						// maximumLevel: 0,
+				? new Cesium.UrlTemplateImageryProvider({
+						// url: "/gis/{z}/{x}/{y}.png"
+						url: "http://t2.tianditu.gov.cn/img_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=img&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&tk=b0b6f6127490e1226b057bf3e90dfa45"
+						// maximumLevel: 22,
 						// minimumLevel: 18
 				  })
 				: null
@@ -76,7 +74,15 @@ export class Map3D {
 		config.showLatLonHeight && this.createLocationPanel();
 		// 显示导航插件
 		config.enableNavigation && this.showNavigation();
-		// this.disableCameraToGround();
+		// 加载单个图层的地址
+		this.viewer.imageryLayers.addImageryProvider(
+			new Cesium.SingleTileImageryProvider({
+				url: "static/map-bg.jpg",
+				rectangle: new Cesium.Rectangle(Cesium.Math.toRadians(-180), Cesium.Math.toRadians(-90), Cesium.Math.toRadians(180), Cesium.Math.toRadians(90))
+			})
+		);
+		// 禁止相机穿地
+		this.disableCameraToGround();
 	}
 	// 显示罗盘、指南针
 	showNavigation() {
@@ -274,7 +280,6 @@ export class Map3D {
 			var pin30 = pinBuilder.fromText("30+", Cesium.Color.YELLOW, 48).toDataURL();
 			var pin20 = pinBuilder.fromText("20+", Cesium.Color.GREEN, 48).toDataURL();
 			var pin10 = pinBuilder.fromText("10+", Cesium.Color.BLUE, 48).toDataURL();
-			var pin5 = pinBuilder.fromText("5+", Cesium.Color.BLUE, 48).toDataURL();
 			var singleDigitPins = new Array(8);
 			for (var i = 0; i < singleDigitPins.length; ++i) {
 				singleDigitPins[i] = pinBuilder.fromText("" + (i + 2), Cesium.Color.VIOLET, 48).toDataURL();
@@ -299,8 +304,6 @@ export class Map3D {
 							cluster.billboard.image = pin20;
 						} else if (clusteredEntities.length >= 10) {
 							cluster.billboard.image = pin10;
-						} else if (clusteredEntities.length >= 5) {
-							cluster.billboard.image = pin5;
 						} else {
 							cluster.billboard.image = singleDigitPins[clusteredEntities.length - 2];
 						}
@@ -362,7 +365,6 @@ export class Map3D {
 					}
 				};
 				entities[index] = dataSource ? dataSource.entities.add(entryObj) : this.viewer.entities.add(entryObj);
-				console.log(dataSource, entities[index]);
 			});
 			return entities;
 		}

@@ -31,7 +31,17 @@ module.exports = {
 		progress: true,
 		compress: true,
 		open: false,
-		contentBase: "./src"
+		contentBase: "./src",
+		proxy: {
+			"/gis": {
+				target: "http://192.168.66.237:8088",
+				pathRewrite: {
+					"^/gis": ""
+				},
+				changeOrigin: false, // target是域名的话，需要这个参数，
+				secure: false // 设置支持https协议的代理
+			}
+		}
 	},
 	resolve: {
 		alias: {
