@@ -6,6 +6,8 @@
 
 > 3.该项目最终打包生成文件夹`map3D`,其中`ZVMap3D.min.js`通过`script标签`在`index.html`页面引入,其余文件目录是`Cesium`默认的静态资源文件,需引入项目工程下的静态资源目录即可。
 
+> 4.该项目基于 webpack 封装了部分 Cesium 的常用功能,其他功能将后续持续开发及优化。
+
 源码地址:https://github.com/Frank17008/Cesium-for-webpack
 
 ## 目录
@@ -63,12 +65,16 @@ globalMap.initMap({
 `containerId`: 指定需要初始化 3D 地图的容器 Id<br />
 `staticResourceUrl`: 指定 3D 地图加载默认静态资源的路径<br />
 
+[返回目录](#目录)
+
 2. ### hideLocationPanel
 
 ```js
 globalMap.hideLocationPanel(true); //隐藏
 globalMap.hideLocationPanel(false); //显示
 ```
+
+[返回目录](#目录)
 
 3. ### setView
 
@@ -85,6 +91,8 @@ globalMap.setView({
 备注:<br />
 视角的参数可通过 [getModelView](#getModelView)获取。
 
+[返回目录](#目录)
+
 4. ### cameraFlyTo
 
 ```js
@@ -100,6 +108,8 @@ globalMap.cameraFlyTo({
 
 备注: [cameraFlyTo](#cameraFlyTo) 不同于 [setView](#setView) 的是,会存在相机飞行的动画
 
+[返回目录](#目录)
+
 5. ### getModelView
 
 ```js
@@ -107,6 +117,8 @@ globalMap.getModelView();
 ```
 
 备注: 该方法只针对与开发环境下调试使用,模型初始化完成后调用该方法,待页面上模型加载完成后,鼠标点击<strong><font color="#2daebf">模型上</font></strong>的任意位置，即可在控制台输出当前相机视角参数。
+
+[返回目录](#目录)
 
 6. ### addModel
 
@@ -119,6 +131,8 @@ let model = globalMap.addModel({
 	height: 0 //高度
 });
 ```
+
+[返回目录](#目录)
 
 7. ### addClusterMarkers
 
@@ -152,6 +166,8 @@ globalMap.addClusterMarkers(data);
 
 备注: 该 API 中的聚合点位样式采用 Cesium 中的`Cesium.PinBuilder`(图钉)类,如需自定义样式需自行扩展
 
+[返回目录](#目录)
+
 8. ### addMarkers
 
 ```js
@@ -181,6 +197,8 @@ var data = [
 ];
 globalMap.addMarkers(data);
 ```
+
+[返回目录](#目录)
 
 9. ### hideMarkerByIds
 
@@ -215,6 +233,8 @@ globalMap.hideMarkerByIds(ids);
 
 备注: 该方法不会直接销毁 Marker,只会隐藏,再次调用时 Marker 显示
 
+[返回目录](#目录)
+
 9. ### removeMarkerByIds
 
 ```js
@@ -224,6 +244,8 @@ globalMap.removeMarkerByIds(ids);
 
 备注: 该方法会直接销毁 Marker
 
+[返回目录](#目录)
+
 10. ### removeAllMarkers
 
 ```js
@@ -231,6 +253,8 @@ globalMap.removeAllMarkers();
 ```
 
 备注: 该方法会直接销毁所有 Marker
+
+[返回目录](#目录)
 
 11. ### removeMarker
 
@@ -253,6 +277,8 @@ globalMap.removeMarker(marker);
 
 备注: 该方法会销毁指定的 Marker
 
+[返回目录](#目录)
+
 12. ### setColor
 
 ```js
@@ -262,6 +288,8 @@ global.setColor(markerIds, "red");
 
 备注: 该方法批量设置 Marker 的颜色, 颜色值支持 `rgb(255,255,143)`, `#EEEEEE`, `'red'`。
 
+[返回目录](#目录)
+
 13. ### resetColor
 
 ```js
@@ -270,6 +298,8 @@ global.resetColor(markerIds);
 ```
 
 备注: 该方法批量重置 Marker 的颜色, 重置为 Cesium 的默认色。
+
+[返回目录](#目录)
 
 14. ### containsMarker
 
@@ -291,6 +321,8 @@ global.containsMarker(marker);
 ```
 
 备注: 该方法判断地图中是否包含指定 marker,返回值: `true`:包含, `false`: 不包含。
+
+[返回目录](#目录)
 
 15. ### registerEvent
 
@@ -316,6 +348,8 @@ globalMap.registerEvent("click", (entry, position) => {
     mousewheel: "鼠标滚轮"
 }
 ```
+
+[返回目录](#目录)
 
 16. ### unRegisterEvent
 
@@ -351,6 +385,8 @@ cofig: {
     offsetY: 信息框Y轴偏移像素值 Number
 }
 ```
+
+[返回目录](#目录)
 
 18. ### removeInfoWindow
 
@@ -396,3 +432,5 @@ globalMap.getFlatternDistance(lat1, lng1, lat2, lng2);
 ```js
 globalMap.destory();
 ```
+
+[返回目录](#目录)
