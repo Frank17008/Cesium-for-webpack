@@ -50,10 +50,11 @@ export class Map3D {
 			showRenderLoopErrors: false,
 			//加载自定义地图瓦片需要指定一个自定义图片服务器 例如指定OpenStreetMapImagerProvider
 			//URL 为瓦片数据服务器地址
-			imageryProvider: config.mapBaseLayerUrl
+			imageryProvider: config.templateImageLayerUrl
 				? new Cesium.UrlTemplateImageryProvider({
+						url: config.templateImageLayerUrl
 						// url: "/gis/{z}/{x}/{y}.png"
-						url: "http://t2.tianditu.gov.cn/img_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=img&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&tk=b0b6f6127490e1226b057bf3e90dfa45"
+						// url: "http://t2.tianditu.gov.cn/img_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=img&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&tk=b0b6f6127490e1226b057bf3e90dfa45"
 						// maximumLevel: 22,
 						// minimumLevel: 18
 				  })
@@ -69,18 +70,22 @@ export class Map3D {
 		this.viewer.scene.globe.enableLighting = config.enableLighting ? true : false;
 		// 开启阴影
 		this.viewer.shadows = config.enableShadows ? true : false;
+		// 开启深度检测
+		this.viewer.scene.globe.depthTestAgainstTerrain = true;
 
 		// 显示坐标
 		config.showLatLonHeight && this.createLocationPanel();
 		// 显示导航插件
 		config.enableNavigation && this.showNavigation();
 		// 加载单个图层的地址
-		this.viewer.imageryLayers.addImageryProvider(
-			new Cesium.SingleTileImageryProvider({
-				url: "static/map-bg.jpg",
-				rectangle: new Cesium.Rectangle(Cesium.Math.toRadians(-180), Cesium.Math.toRadians(-90), Cesium.Math.toRadians(180), Cesium.Math.toRadians(90))
-			})
-		);
+		if (config.singleImageLayerUrl) {
+			this.viewer.imageryLayers.addImageryProvider(
+				new Cesium.SingleTileImageryProvider({
+					url: config.singleImageLayerUrl,
+					rectangle: new Cesium.Rectangle(Cesium.Math.toRadians(-180), Cesium.Math.toRadians(-90), Cesium.Math.toRadians(180), Cesium.Math.toRadians(90))
+				})
+			);
+		}
 		// 禁止相机穿地
 		this.disableCameraToGround();
 	}
@@ -153,8 +158,8 @@ export class Map3D {
 				//将笛卡尔三维坐标转为地图坐标（弧度）
 				let cartographic = self.viewer.scene.globe.ellipsoid.cartesianToCartographic(cartesian);
 				//将地图坐标（弧度）转为十进制的度数
-				let lat_String = Cesium.Math.toDegrees(cartographic.latitude).toFixed(4);
-				let log_String = Cesium.Math.toDegrees(cartographic.longitude).toFixed(4);
+				let lat_String = Cesium.Math.toDegrees(cartographic.latitude).toFixed(7);
+				let log_String = Cesium.Math.toDegrees(cartographic.longitude).toFixed(7);
 				let alti_String = (self.viewer.camera.positionCartographic.height / 1000).toFixed(2);
 				longitude.innerHTML = log_String;
 				latitude.innerHTML = lat_String;
@@ -460,7 +465,6 @@ export class Map3D {
 					}
 				}, Cesium.ScreenSpaceEventType[EVENTS_MAP[type]]);
 			} else {
-				// this.eventHandler[type].setInputAction(func, Cesium.ScreenSpaceEventType[EVENTS_MAP[type]]);
 				this.eventHandler[type].setInputAction((e) => {
 					if (type === "click") {
 						let entity = this.viewer.scene.pick(e.position);
@@ -517,11 +521,11 @@ export class Map3D {
 	removeInfoWindow() {
 		document.querySelector("#map3d-infowindow").style.display = "none";
 	}
+	// 禁止相机穿地
 	disableCameraToGround() {
 		const self = this;
 		this.viewer.scene.preRender.addEventListener(onPreFrame, self);
 		function onPreFrame() {
-			console.log(self.viewer.scene.mode);
 			if (self.viewer.scene.mode == Cesium.SceneMode.MORPHING) return;
 			// 获取相机的高度
 			let groundHeightAtCameraPosition = self.viewer.scene.globe.getHeight(self.viewer.camera.positionCartographic);
@@ -548,6 +552,191 @@ export class Map3D {
 				});
 			}
 		}
+	}
+	// line polygon circle rectangle
+	startDraw(drawingMode, data, callback) {
+		var self = this;
+		var activeShapePoints = [];
+		var activeShape;
+		var floatingPoint;
+		var handler = new Cesium.ScreenSpaceEventHandler(self.viewer.scene.canvas);
+		//鼠标左键
+		handler.setInputAction((event) => {
+			// scene.pickPosition只有在开启地形深度检测，且不使用默认地形时是准确的。
+			var earthPosition = self.viewer.scene.pickPosition(event.position);
+			if (Cesium.defined(earthPosition)) {
+				// 绘制第一个点
+				if (activeShapePoints.length === 0) {
+					floatingPoint = createPoint(earthPosition);
+					activeShapePoints.push(earthPosition);
+					var dynamicPositions = new Cesium.CallbackProperty(function () {
+						if (drawingMode === "polygon") {
+							return new Cesium.PolygonHierarchy(activeShapePoints);
+						}
+						return activeShapePoints;
+					}, false);
+					activeShape = drawShape(drawingMode, dynamicPositions); //绘制动态图
+				}
+				activeShapePoints.push(earthPosition);
+				createPoint(earthPosition);
+			}
+		}, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+		//鼠标移动
+		handler.setInputAction((event) => {
+			if (Cesium.defined(floatingPoint)) {
+				var newPosition = self.viewer.scene.pickPosition(event.endPosition);
+				if (Cesium.defined(newPosition)) {
+					floatingPoint.position.setValue(newPosition);
+					activeShapePoints.pop();
+					activeShapePoints.push(newPosition);
+				}
+			}
+		}, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
+		// 鼠标右键
+		handler.setInputAction((event) => {
+			resetDraw(drawingMode);
+			handler.removeInputAction(Cesium.ScreenSpaceEventType.LEFT_CLICK);
+			handler.removeInputAction(Cesium.ScreenSpaceEventType.MOUSE_MOVE);
+			handler.removeInputAction(Cesium.ScreenSpaceEventType.RIGHT_CLICK);
+			handler = null;
+			// 判断点位是否在区域内
+			// self.isContainedInRect(data, callback);
+		}, Cesium.ScreenSpaceEventType.RIGHT_CLICK);
+		//绘制点
+		function createPoint(worldPosition) {
+			var point = self.viewer.entities.add({
+				position: worldPosition,
+				point: {
+					color: Cesium.Color.WHITE,
+					pixelSize: 2
+					// heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
+				}
+			});
+			return point;
+		}
+		function resetDraw(drawingMode) {
+			activeShapePoints.pop();
+			drawShape(drawingMode, activeShapePoints);
+			self.viewer.entities.remove(floatingPoint);
+			self.viewer.entities.remove(activeShape);
+			floatingPoint = undefined;
+			activeShape = undefined;
+			activeShapePoints = [];
+		}
+		//绘制图形
+		function drawShape(mode, positionData) {
+			var shape;
+			if (mode === "line") {
+				shape = self.viewer.entities.add({
+					polyline: {
+						positions: positionData,
+						clampToGround: false, //贴地
+						width: 5
+					}
+				});
+			} else if (mode === "polygon") {
+				shape = self.viewer.entities.add({
+					polygon: {
+						height: 30,
+						extrudedHeight: 30,
+						hierarchy: positionData,
+						material: new Cesium.ColorMaterialProperty(Cesium.Color.YELLOW.withAlpha(0.7))
+					}
+				});
+			} else if (mode === "circle") {
+				//当positionData为数组时绘制最终图，如果为function则绘制动态图
+				var value = typeof positionData.getValue === "function" ? positionData.getValue(0) : positionData;
+				shape = self.viewer.entities.add({
+					position: activeShapePoints[0],
+					name: "Circle",
+					height: 10,
+					// extrudedHeight: 10,
+					ellipse: {
+						// 指定半长轴的数值属性
+						semiMinorAxis: new Cesium.CallbackProperty(function () {
+							//半径 两点间距离
+							var r = Math.sqrt(Math.pow(value[0].x - value[value.length - 1].x, 2) + Math.pow(value[0].y - value[value.length - 1].y, 2));
+							return r ? r : r + 1;
+						}, false),
+						// 指定半短轴的数字属性
+						semiMajorAxis: new Cesium.CallbackProperty(function () {
+							var r = Math.sqrt(Math.pow(value[0].x - value[value.length - 1].x, 2) + Math.pow(value[0].y - value[value.length - 1].y, 2));
+							return r ? r : r + 1;
+						}, false),
+						material: Cesium.Color.YELLOW.withAlpha(0.5),
+						outline: false
+					}
+				});
+			} else if (mode === "rectangle") {
+				//当positionData为数组时绘制最终图，如果为function则绘制动态图
+				// 获取矩形两个对角点的笛卡尔坐标
+				var arr = typeof positionData.getValue === "function" ? positionData.getValue(0) : positionData;
+				console.log("arr===", arr);
+				self._rectArr = arr;
+				shape = self.viewer.entities.add({
+					name: "Rectangle",
+					height: 40,
+					extrudedHeight: 40, //矩形凸面相对于椭球地面的高度
+					rectangle: {
+						coordinates: new Cesium.CallbackProperty(function () {
+							var obj = Cesium.Rectangle.fromCartesianArray(arr);
+							return obj;
+						}, false),
+						material: Cesium.Color.YELLOW.withAlpha(0.5)
+					}
+				});
+			}
+			return shape;
+		}
+	}
+	isContainedInRect(data, callback) {
+		var cartographic1 = Cesium.Cartographic.fromCartesian(data[0]);
+		// 矩形左上角经纬度
+		var position1 = {
+			lat: Cesium.Math.toDegress(cartographic1.latitude),
+			lon: Cesium.Math.toDegress(cartographic1.longitude)
+		};
+		var cartographic2 = Cesium.Cartographic.fromCartesian(data[1]);
+		// 矩形右下角经纬度
+		var position2 = {
+			lat: Cesium.Math.toDegress(cartographic2.latitude),
+			lon: Cesium.Math.toDegress(cartographic2.longitude)
+		};
+		var position = [position1, position2];
+	}
+	//计算两点间距离
+	getFlatternDistance(lat1, lng1, lat2, lng2) {
+		const EARTH_RADIUS = 6378137.0; //单位M
+		const PI = Math.PI;
+		function getRad(d) {
+			return (d * PI) / 180.0;
+		}
+		var f = getRad((lat1 + lat2) / 2);
+		var g = getRad((lat1 - lat2) / 2);
+		var l = getRad((lng1 - lng2) / 2);
+
+		var sg = Math.sin(g);
+		var sl = Math.sin(l);
+		var sf = Math.sin(f);
+
+		var s, c, w, r, d, h1, h2;
+		var a = EARTH_RADIUS;
+		var fl = 1 / 298.257;
+
+		sg = sg * sg;
+		sl = sl * sl;
+		sf = sf * sf;
+
+		s = sg * (1 - sl) + (1 - sf) * sl;
+		c = (1 - sg) * (1 - sl) + sf * sl;
+
+		w = Math.atan(Math.sqrt(s / c));
+		r = Math.sqrt(s * c) / w;
+		d = 2 * w * a;
+		h1 = (3 * r - 1) / 2 / c;
+		h2 = (3 * r + 1) / 2 / s;
+
+		return d * (1 + fl * (h1 * sf * (1 - sg) - h2 * (1 - sf) * sg));
 	}
 	// 销毁
 	destory() {
