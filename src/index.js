@@ -70,7 +70,7 @@ export class Map3D {
 		this.viewer.scene.globe.enableLighting = config.enableLighting ? true : false;
 		// 开启阴影
 		this.viewer.shadows = config.enableShadows ? true : false;
-		// 开启深度检测
+		// 开启深度检测,隐藏地形以下
 		this.viewer.scene.globe.depthTestAgainstTerrain = true;
 
 		// 显示坐标
@@ -140,7 +140,7 @@ export class Map3D {
 	hideLocationPanel(isShow) {
 		let dom = document.querySelector("#latlng");
 		if (dom) {
-			isShow ? dom.setAttribute("visibility", "visible") : dom.setAttribute("visibility", "hidden");
+			dom.style.visibility = isShow ? "visible" : "hidden";
 		}
 	}
 	// 显示鼠标的移动坐标
