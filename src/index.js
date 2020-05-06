@@ -125,11 +125,16 @@ export class Map3D {
 	}
 	// 创建显示坐标面板
 	createLocationPanel() {
-		const html = '<div id="latlng" style="height: 30px;line-height: 30px;position: fixed;bottom: 50px;right: 100px;background-color: rgba(68, 62, 62, 0.55);color: white;z-index: 2;">经度：<span id="longitude"></span>&nbsp;&nbsp; 纬度：<span id="latitude"></span>&nbsp;&nbsp; 视角高：<span id="altitude"></span>km</div>';
-		let dom = document.createElement("div");
-		dom.innerHTML = html;
-		document.body.appendChild(dom);
-		this.showMouseLocation();
+		let dom = document.querySelector("#latlng");
+		if (dom) {
+			dom.style.visibility = "visible";
+		} else {
+			let dom = document.createElement("div");
+			const html = '<div id="latlng" style="height: 30px;line-height: 30px;position: fixed;bottom: 50px;right: 100px;background-color: rgba(68, 62, 62, 0.55);color: white;z-index: 2;">经度：<span id="longitude"></span>&nbsp;&nbsp; 纬度：<span id="latitude"></span>&nbsp;&nbsp; 视角高：<span id="altitude"></span>km</div>';
+			dom.innerHTML = html;
+			document.body.appendChild(dom);
+			this.showMouseLocation();
+		}
 	}
 	/**
 	 * 是否隐藏坐标面板
@@ -502,7 +507,13 @@ export class Map3D {
 			infoDiv = document.createElement("div");
 			infoDiv.setAttribute("id", "map3d-infowindow");
 			infoDiv.className = config.className ? `${config.className} infowindow` : "infowindow";
-			infoDiv.innerHTML = config.html || "";
+			if (config.html) {
+				if (typeof config.html === "string") {
+					infoDiv.innerHTML = config.html || "";
+				} else if (typeof config.html === "object" && config.html instanceof HTMLElement) {
+					infoDiv.append(config.html);
+				}
+			}
 			document.querySelector(`#${this.divId}`).appendChild(infoDiv);
 		}
 		// 场景帧渲染结束事件
