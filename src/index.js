@@ -500,6 +500,7 @@ export class Map3D {
 	 * @memberof Map3D
 	 */
 	addInfowindow(entity, position, config) {
+		const self = this;
 		let infoDiv = document.querySelector("#map3d-infowindow");
 		// 屏幕坐标转换为笛卡尔坐标
 		let cartesian = this.viewer.scene.pickPosition(position);
@@ -507,9 +508,14 @@ export class Map3D {
 			infoDiv = document.createElement("div");
 			infoDiv.setAttribute("id", "map3d-infowindow");
 			infoDiv.className = config.className ? `${config.className} infowindow` : "infowindow";
+			let closeIcon = document.createElement("div");
+			closeIcon.className = "close-icon";
+			closeIcon.innerHTML = "X";
+			closeIcon.setAttribute("onclick", "this.parentElement.parentElement.removeChild(document.querySelector('#map3d-infowindow'))");
+			infoDiv.appendChild(closeIcon);
 			if (config.html) {
 				if (typeof config.html === "string") {
-					infoDiv.innerHTML = config.html || "";
+					infoDiv.innerHTML = infoDiv.innerHTML ? infoDiv.innerHTML + config.html || "" : "";
 				} else if (typeof config.html === "object" && config.html instanceof HTMLElement) {
 					infoDiv.append(config.html);
 				}
