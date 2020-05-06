@@ -530,7 +530,11 @@ export class Map3D {
 		});
 	}
 	removeInfoWindow() {
-		document.querySelector("#map3d-infowindow").style.display = "none";
+		let parentDom = document.querySelector(`#${this.divId}`);
+		let childDom = document.querySelector("#map3d-infowindow");
+		if (parentDom && childDom) {
+			parentDom.removeChild(childDom);
+		}
 	}
 	// 禁止相机穿地
 	disableCameraToGround() {
