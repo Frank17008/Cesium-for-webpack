@@ -1,122 +1,123 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<meta http-equiv="X-UA-Compatible" content="ie=edge" />
-		<title>Document</title>
-		<style>
-			#map {
-				width: 100%;
-				height: 100%;
-				padding: 0;
-				margin: 0;
-				overflow: hidden;
-			}
-		</style>
-	</head>
 
-	<body>
-		<button id="draw" style="position: absolute; top: 0; left: 10px; z-index: 1000;">绘制模式</button>
-		<div id="map"></div>
-	</body>
-	<script type="text/javascript">
-		let globalMap = new window.Map3D("map");
-		globalMap.initMap({
-			showLatLonHeight: false,
-			enableLighting: true,
-			enableNavigation: true,
-			mapBaseLayerUrl: "./image/map-bg.jpg"
-		});
-		globalMap.setView({
-			lon: 108.9654177,
-			lat: 34.2630702,
-			height: 203.53703876812398,
-			heading: 335.7402975,
-			pitch: -29.8306133
-		});
-		let model = globalMap.addModel({
-			id: "mainBuilding",
-			url: "./model/model.gltf",
-			lontitude: 108.9625,
-			latitude: 34.2685,
-			height: 0
-		});
-		// 模拟摄像机数据
-		var data = [
-			{
-				id: "camera01",
-				lon: 108.963966,
-				lat: 34.2656,
-				height: 10,
-				labelText: "摄像机1",
-				image: {
-					url: "./image/camera.jpg"
-				}
-			},
-			{
-				id: "camera02",
-				lon: 108.9637666,
-				lat: 34.2654362,
-				height: 10,
-				labelText: "球机1",
-				image: {
-					url: "./image/qj.svg"
-				}
-			},
-			{
-				id: "camera03",
-				lon: 108.9644166,
-				lat: 34.2650062,
-				height: 10,
-				labelText: "摄像机3",
-				image: {
-					url: "./image/znqj.svg"
-				}
-			},
-			{
-				id: "camera04",
-				lon: 108.9639996,
-				lat: 34.2650062,
-				height: 10,
-				labelText: "摄像机4",
-				image: {
-					url: "./image/zpj.svg"
-				}
-			}
-		];
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+	<title>Document</title>
+	<style>
+		#map {
+			width: 100%;
+			height: 100%;
+			padding: 0;
+			margin: 0;
+			overflow: hidden;
+		}
+	</style>
+</head>
 
-		// for (let i = 50; i < 100; i++) {
-		// 	data[i] = {
-		// 		id: "camera0" + i,
-		// 		lon: data[0].lon + i * 0.0020,
-		// 		lat: data[0].lat + i * 0.0020,
-		// 		height: 10,
-		// 		labelText: "聚合测试点" + i,
-		// 		image: {
-		// 			url: "./image/zpj.svg"
-		// 		}
-		// 	}
-		// }
-		globalMap.addMarkers(data);
-		// globalMap.addClusterMarkers(data);
-		// globalMap.registerEvent("click", (entry, position) => {
-		// 	entry &&
-		// 		data.forEach((marker) => {
-		// 			if (marker.id === entry.id.id) {
-		// 				globalMap.setColor([entry.id.id], "red");
-		// 			} else {
-		// 				globalMap.resetColor([marker.id]);
-		// 			}
-		// 		});
-		// 	globalMap.addInfowindow(entry, position, {
-		// 		className: "haha",
-		// 		html: "<div>111</div>"
-		// 	});
-		// });
-		globalMap.getModelView();
-		// document.querySelector("#draw").onclick = () => {
-		// 	globalMap.startDraw("rectangle", data, () => {});
-		// };
-	</script>
+<body>
+	<button id="draw" style="position: absolute; top: 0; left: 10px; z-index: 1000;">绘制模式</button>
+	<div id="map"></div>
+</body>
+<script type="text/javascript">
+	let globalMap = new window.Map3D("map");
+	globalMap.initMap({
+		showLatLonHeight: false,
+		enableLighting: true,
+		enableNavigation: true,
+		mapBaseLayerUrl: "./image/map-bg.jpg"
+	});
+	globalMap.setView({
+		lon: 108.9654177,
+		lat: 34.2630702,
+		height: 203.53703876812398,
+		heading: 335.7402975,
+		pitch: -29.8306133
+	});
+	// let model = globalMap.addModel({
+	// 	id: "mainBuilding",
+	// 	url: "./model/model.gltf",
+	// 	lontitude: 108.9625,
+	// 	latitude: 34.2685,
+	// 	height: 0
+	// });
+	// 模拟摄像机数据
+	var data = [{
+			id: "camera01",
+			lon: 108.963966,
+			lat: 34.2656,
+			height: 10,
+			labelText: "摄像机1",
+			image: {
+				url: "./image/camera.jpg"
+			}
+		},
+		{
+			id: "camera02",
+			lon: 108.9637666,
+			lat: 34.2654362,
+			height: 10,
+			labelText: "球机1",
+			image: {
+				url: "./image/qj.svg"
+			}
+		},
+		{
+			id: "camera03",
+			lon: 108.9644166,
+			lat: 34.2650062,
+			height: 10,
+			labelText: "摄像机3",
+			image: {
+				url: "./image/znqj.svg"
+			}
+		},
+		{
+			id: "camera04",
+			lon: 108.9639996,
+			lat: 34.2650062,
+			height: 10,
+			labelText: "摄像机4",
+			image: {
+				url: "./image/zpj.svg"
+			}
+		}
+	];
+
+	// for (let i = 50; i < 100; i++) {
+	// 	data[i] = {
+	// 		id: "camera0" + i,
+	// 		lon: data[0].lon + i * 0.0020,
+	// 		lat: data[0].lat + i * 0.0020,
+	// 		height: 10,
+	// 		labelText: "聚合测试点" + i,
+	// 		image: {
+	// 			url: "./image/zpj.svg"
+	// 		}
+	// 	}
+	// }
+	globalMap.addMarkers(data);
+	// globalMap.addClusterMarkers(data);
+	globalMap.registerEvent("click", (entry, position) => {
+		entry &&
+			data.forEach((marker) => {
+				if (marker.id === entry.id.id) {
+					globalMap.setColor([entry.id.id], "red");
+				} else {
+					globalMap.resetColor([marker.id]);
+				}
+			});
+		globalMap.addInfowindow(entry, position, {
+			className: "haha",
+			html: "<div>111</div>"
+		});
+	});
+	// globalMap.getModelView();
+	// document.querySelector("#draw").onclick = () => {
+	// 	globalMap.startDraw("rectangle", data, () => {});
+	// };
+</script>
+
 </html>
