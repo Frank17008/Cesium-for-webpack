@@ -33,7 +33,7 @@
 		"url-loader": "^4.1.0",
 		"webpack": "^4.42.1",
 		"webpack-cli": "^3.3.11",
-		"webpack-dev-server": "^3.10.3"
+		"webpack-dev-server": "^3.11.3"
 	},
 	"dependencies": {
 		"cesium": "1.60.0",
